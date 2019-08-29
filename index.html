@@ -1,106 +1,113 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-8756318-6"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'UA-8756318-6');
-    </script>
-    <meta charset="utf-8" />
-    <title>Queue Estimator</title>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-8756318-6"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'UA-8756318-6');
+	</script>
+	<meta charset="utf-8" />
+	<title>Queue Estimator</title>
 	<style>
-	html, body{
-		width: 100%;
-	}
-	table {
-		width: calc(100% - 20px);
-		margin: 10px;
-		padding: 0;
-	}
-	table tbody tr {
-	  background: #acacac;
-	  line-height: 1.2em;
-	}
+		html,
+		body {
+			width: 100%;
+		}
 
-	table tbody tr:nth-child(2n) {
-	  background: #909090;
-	}
+		table {
+			width: calc(100% - 20px);
+			margin: 10px;
+			padding: 0;
+		}
 
-	table tbody td, table tfoot td {
-	  text-align: right;
-	}
+		table tbody tr {
+			background: #acacac;
+			line-height: 1.2em;
+		}
 
-	input[type=number], input[type=time] {
-	  text-align: right; 
-	  width: 70px;
-	}
+		table tbody tr:nth-child(2n) {
+			background: #909090;
+		}
+
+		table tbody td,
+		table tfoot td {
+			text-align: right;
+		}
+
+		input[type=number],
+		input[type=time] {
+			text-align: right;
+			width: 70px;
+		}
 	</style>
 </head>
-	<body>
-		<button id="addRow">New Row</button>
-		<table padding=0 cellspacing=0>
-		  <thead>
+
+<body>
+	<button id="addRow">New Row</button>
+	<table padding=0 cellspacing=0>
+		<thead>
 			<tr>
-			  <th>Time (hh:mm)</th>
-			  <th>Queue</th>
-			  <th>Delta Time (hh:mm)</th>
-			  <th>Delta Queue</th>
-			  <th>Users/min</th>
-			  <th>End Time Estimate</th>
-			  <th></th>
+				<th>Time (hh:mm)</th>
+				<th>Queue</th>
+				<th>Delta Time (hh:mm)</th>
+				<th>Delta Queue</th>
+				<th>Users/min</th>
+				<th>End Time Estimate</th>
+				<th></th>
 			</tr>
-		  </thead>
-		  <tfoot>
+		</thead>
+		<tfoot>
 			<tr>
-			  <td colspan="5"></td>
-			  <td id="endTimeEstimate"></td>
+				<td colspan="5"></td>
+				<td id="endTimeEstimate"></td>
 			</tr>
-		  </tfoot>
-		  <tbody>
-    
-		  </tbody>
-		</table>
-		<footer>
-			Created by Hottage (Sylvanas/Mograine EU)
-		</footer>
-		<script>
-			let inElementChange = false;
-			let onElementChange = e => {
-				if (inElementChange)
-  				return;
-    
-			  try {
-  				inElementChange = true;
-    
+		</tfoot>
+		<tbody>
+
+		</tbody>
+	</table>
+	<footer>
+		Created by Hottage (Sylvanas/Mograine EU)
+	</footer>
+	<script>
+		let inElementChange = false;
+		let onElementChange = e => {
+			if (inElementChange)
+				return;
+
+			try {
+				inElementChange = true;
+
 				let values = [], rows = document.querySelectorAll('tbody tr'),
 					average = 0;
 
-				for(let r = 0; r < rows.length; r++) {
-				  let timeParts = rows[r].querySelector('input[type="time"]').value.split(':').map(i => parseInt(i)), time= NaN;
-				  
-				  let queue = rows[r].querySelector('input[type="number"]').value;
+				for (let r = 0; r < rows.length; r++) {
+					let timeParts = rows[r].querySelector('input[type="time"]').value.split(':').map(i => parseInt(i)), time = NaN;
 
-				  if (timeParts.length == 2) {
-					time = (timeParts[0] * 60 * 60) + (timeParts[1] * 60);
-				  } else {
-					time = (timeParts[0] * 60 * 60) + (timeParts[1] * 60) + timeParts[2];
-				  }
+					let queue = rows[r].querySelector('input[type="number"]').value;
 
-				  values.push({time: time, queue: parseInt(queue)});
+					if (timeParts.length == 2) {
+						time = (timeParts[0] * 60 * 60) + (timeParts[1] * 60);
+					} else {
+						time = (timeParts[0] * 60 * 60) + (timeParts[1] * 60) + timeParts[2];
+					}
+
+					values.push({ time: time, queue: parseInt(queue) });
 				}
 
 				window.localStorage.setItem('results', JSON.stringify(values));
-    
-				for (let v = 1; v < values.length; v++) {
-				  let value = values[v], prev = values[v - 1], cells = rows[v].querySelectorAll('td');
-				  let deltaT = value.time - prev.time, deltaQ = prev.queue - value.queue, flowRate = deltaQ / deltaT;
 
-				  cells[2].innerHTML = formatSeconds(deltaT);
-				  cells[3].innerHTML = deltaQ;
-				  cells[4].innerHTML = Math.floor(flowRate * 100 * 60) / 100;
-				  cells[5].innerHTML = formatSeconds(Math.floor(value.time + (value.queue / flowRate)));
+				for (let v = 1; v < values.length; v++) {
+					let value = values[v], prev = values[v - 1], cells = rows[v].querySelectorAll('td');
+					let deltaT = value.time - prev.time, deltaQ = prev.queue - value.queue, flowRate = deltaQ / deltaT;
+
+					cells[2].innerHTML = formatSeconds(deltaT);
+					cells[3].innerHTML = deltaQ;
+					cells[4].innerHTML = Math.floor(flowRate * 100 * 60) / 100;
+					cells[5].innerHTML = formatSeconds(Math.floor(value.time + (value.queue / flowRate)));
 				}
 
 				let time = values[values.length - 1].time,
@@ -108,100 +115,108 @@
 					deltaT = values[values.length - 1].time - values[0].time,
 					deltaQ = values[0].queue - values[values.length - 1].queue,
 					flowRate = deltaQ / deltaT;
-				
+
 				document.querySelectorAll('tfoot td')[1].innerHTML = formatSeconds(Math.floor(time + (queue / flowRate)));
-			  }
-			  catch(e) { }
-  
-			  inElementChange = false;
-			};
-
-			let formatSeconds = value => {
-				let hours = Math.floor(value / 60 / 60),
-    				minutes = Math.floor((value / 60) - (hours * 60)),
-    				seconds = value % 60;
-  
-			  return formatTime(hours, minutes, seconds);
 			}
+			catch (e) { }
 
-			let formatTime = (hours, minutes, seconds) => {
-				let result = hours < 10 ? '0' : '';
-			  result += hours + ':';
-			  result += minutes < 10 ? '0' : '';
-			  result += minutes + ':';
-			  result += seconds < 10 ? '0' : '';
-			  result += seconds;
-  
-			  return result;
-			}
+			inElementChange = false;
+		};
 
-			let addRowWithValues = (timeValue, queueValue) => {
-				let row = document.createElement('tr');
-  
-			  if (timeValue === undefined) {
+		let formatSeconds = value => {
+			let hours = Math.floor(value / 60 / 60),
+				minutes = Math.floor((value / 60) - (hours * 60)),
+				seconds = value % 60;
+
+			return formatTime(hours, minutes, seconds);
+		}
+
+		let formatTime = (hours, minutes, seconds) => {
+			let result = hours < 10 ? '0' : '';
+			result += hours + ':';
+			result += minutes < 10 ? '0' : '';
+			result += minutes + ':';
+			result += seconds < 10 ? '0' : '';
+			result += seconds;
+
+			return result;
+		}
+
+		let addRowWithValues = (timeValue, queueValue) => {
+			let row = document.createElement('tr');
+
+			if (timeValue === undefined) {
 				let currentTime = new Date();
-    
-  				timeValue = (currentTime.getHours() < 10 ? '0' : '') + currentTime.getHours() + ':' + (currentTime.getMinutes() < 10 ? '0' : '') + currentTime.getMinutes() + ':00';
-			  } else {
+
+				timeValue = (currentTime.getHours() < 10 ? '0' : '') + currentTime.getHours() + ':' + (currentTime.getMinutes() < 10 ? '0' : '') + currentTime.getMinutes() + ':00';
+			} else {
 				timeValue = formatSeconds(timeValue);
-			  }
-  
-			  if (queueValue === undefined) {
-  				queueValue = 0;
-			  }
-  
-			  for (let c = 0; c < 7; c++){
-  				let cell = document.createElement('td');
-  				row.appendChild(cell);
-    
-				switch (c){
-				  case 0:
-      				let time = document.createElement('input');
-					time.value = timeValue;
-					time.type = 'time';
-					time.required = true;
-					time.onchange = onElementChange;
-      				cell.appendChild(time);
-      				break;
-				  case 1:
-      				let queue = document.createElement('input');
-					queue.value = queueValue;
-					queue.type = 'number';
-					queue.step = 1;
-					queue.min = 0;
-					queue.required = true;
-					queue.onchange = onElementChange;
-      				cell.appendChild(queue);
-      				break;
-				   case 6:
-       				let button = document.createElement('button');
-					button.innerHTML = 'X';
-					button.onclick = _ => {
-        				let row = button.parentElement.parentElement;
-					  row.parentElement.removeChild(row);
-          
-					  onElementChange();
-					};
-					cell.appendChild(button);
+			}
+
+			if (queueValue === undefined) {
+				queueValue = 0;
+			}
+
+			for (let c = 0; c < 7; c++) {
+				let cell = document.createElement('td');
+				row.appendChild(cell);
+
+				switch (c) {
+					case 0:
+						let time = document.createElement('input');
+						time.value = timeValue;
+						time.type = 'time';
+						time.required = true;
+						time.onchange = onElementChange;
+						cell.appendChild(time);
+						break;
+					case 1:
+						let queue = document.createElement('input');
+						queue.value = queueValue;
+						queue.type = 'number';
+						queue.step = 1;
+						queue.min = 0;
+						queue.required = true;
+						queue.onchange = onElementChange;
+						cell.appendChild(queue);
+						break;
+					case 6:
+						let button = document.createElement('button');
+						button.innerHTML = 'X';
+						button.onclick = _ => {
+							let row = button.parentElement.parentElement;
+							row.parentElement.removeChild(row);
+							gtag('event', 'delete-row', {
+								'event_category': 'data'
+							});
+
+							onElementChange();
+						};
+						cell.appendChild(button);
 				}
-			  }
-  
-			  document.getElementsByTagName('tbody')[0].appendChild(row);
-			  onElementChange();
 			}
 
-			document.getElementById("addRow").addEventListener("click", e => {
-				addRowWithValues();
-			}, false);
+			document.getElementsByTagName('tbody')[0].appendChild(row);
+			onElementChange();
+		}
 
-			let stored = window.localStorage.getItem('results');
-			if (stored) {
-				let current = JSON.parse(stored);
-  
-			  for (let r = 0; r < current.length; r ++) {
-  				addRowWithValues(current[r].time, current[r].queue);
-			  }
+		document.getElementById("addRow").addEventListener("click", e => {
+			gtag('event', 'create-row', {
+				'date': new Date(),
+				'event_category': 'data'
+			});
+			addRowWithValues();
+		}, false);
+
+		let stored = window.localStorage.getItem('results');
+		if (stored) {
+			let current = JSON.parse(stored);
+
+			for (let r = 0; r < current.length; r++) {
+				addRowWithValues(current[r].time, current[r].queue);
 			}
-		</script>
-	</body>
+		}
+	</script>
+</body>
+
 </html>
