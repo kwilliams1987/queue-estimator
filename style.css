@@ -1,0 +1,41 @@
+html,
+body {
+    width: 100%;
+}
+
+header,
+footer {
+    margin: 10px;
+}
+
+table {
+    width: calc(100% - 40px);
+    margin: 10px;
+    padding: 0;
+}
+
+table tr {
+    background: #acacac;
+    line-height: 1.5em;
+}
+
+table tbody tr:nth-child(2n) {
+    background: #909090;
+}
+
+table thead tr,
+table tfoot tr {
+    background: #0f0f0f;
+    color: #fff
+}
+
+table tbody td,
+table tfoot td {
+    text-align: right;
+}
+
+input[type=number],
+input[type=time] {
+    text-align: right;
+    width: 70px;
+}
